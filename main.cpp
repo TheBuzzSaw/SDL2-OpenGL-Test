@@ -214,6 +214,7 @@ int main(int argc, char** argv)
     glewInit();
     glEnable(GL_DEBUG_OUTPUT);
     
+    SDL_GL_SetSwapInterval(1);
     cout
         << "OpenGL Vendor: " << GetString(GL_VENDOR)
         << "\nOpenGL Renderer: " << GetString(GL_RENDERER)
@@ -253,59 +254,9 @@ int main(int argc, char** argv)
     glBindTexture(GL_TEXTURE_2D, texture);
     SetParams(TexParams);
     LoadTexture("stick-man.png");
+    glDisable(GL_TEXTURE_2D);
     
     glViewport(0, 0, 1024, 768);
-    glClearColor(0.0f, 0.25f, 0.25f, 1.0f);
-    glUseProgram(program);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnableVertexAttribArray(positionAttribute);
-    glEnableVertexAttribArray(colorAttribute);
-    glEnableVertexAttribArray(textureCoordinateAttribute);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i(textureUniform, 0);
-    GLfloat matrix[16] = {};
-    matrix[0] = 1.0f;
-    matrix[5] = 1.0f;
-    matrix[10] = 1.0f;
-    matrix[15] = 1.0f;
-    glUniformMatrix4fv(matrixUniform, 1, GL_FALSE, matrix);
-    
-    GLfloat attribs[7 * 6] =
-    {
-        -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, +0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        +0.5f, +0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        +0.5f, +0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        +0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
-    };
-    
-    constexpr auto Stride = sizeof(GLfloat) * 7;
-    glVertexAttribPointer(
-        positionAttribute,
-        2,
-        GL_FLOAT,
-        GL_FALSE,
-        Stride,
-        attribs);
-    glVertexAttribPointer(
-        textureCoordinateAttribute,
-        2,
-        GL_FLOAT,
-        GL_FALSE,
-        Stride,
-        attribs + 2);
-    glVertexAttribPointer(
-        colorAttribute,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        Stride,
-        attribs + 4);
     
     bool run = true;
     bool doDraw = true;
@@ -345,8 +296,71 @@ int main(int argc, char** argv)
         if (doDraw)
         {
             doDraw = false;
+            glClearColor(0.0f, 0.25f, 0.25f, 1.0f);
+            glUseProgram(program);
+            glEnable(GL_TEXTURE_2D);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnableVertexAttribArray(positionAttribute);
+            glEnableVertexAttribArray(colorAttribute);
+            glEnableVertexAttribArray(textureCoordinateAttribute);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glUniform1i(textureUniform, 0);
+            GLfloat matrix[16] = {};
+            matrix[0] = 1.0f;
+            matrix[5] = 1.0f;
+            matrix[10] = 1.0f;
+            matrix[15] = 1.0f;
+            glUniformMatrix4fv(matrixUniform, 1, GL_FALSE, matrix);
+            
+            GLfloat attribs[7 * 6] =
+            {
+                -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+                -0.5f, +0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+                +0.5f, +0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+                -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+                +0.5f, +0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+                +0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+            };
+            
             glClear(GL_COLOR_BUFFER_BIT);
+            
+            constexpr auto Stride = sizeof(GLfloat) * 7;
+            glVertexAttribPointer(
+                positionAttribute,
+                2,
+                GL_FLOAT,
+                GL_FALSE,
+                Stride,
+                attribs);
+            glVertexAttribPointer(
+                textureCoordinateAttribute,
+                2,
+                GL_FLOAT,
+                GL_FALSE,
+                Stride,
+                attribs + 2);
+            glVertexAttribPointer(
+                colorAttribute,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                Stride,
+                attribs + 4);
+            
+            
             glDrawArrays(GL_TRIANGLES, 0, 6);
+            
+            glDisableVertexAttribArray(textureCoordinateAttribute);
+            glDisableVertexAttribArray(colorAttribute);
+            glDisableVertexAttribArray(positionAttribute);
+            glDisable(GL_BLEND);
+            glDisable(GL_TEXTURE_2D);
+
+            glUseProgram(0);
+            
             SDL_GL_SwapWindow(window);
         }
         
